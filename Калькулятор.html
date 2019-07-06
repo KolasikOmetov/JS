@@ -1,0 +1,177 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<title>Калькулятор</title>
+</head>
+<body>
+
+<script type="text/javascript">
+window.onload = function(){
+let n1= document.getElementById("n1"),
+n2= document.getElementById("n2"),
+n3= document.getElementById("n3"),
+n4= document.getElementById("n4"),
+n5= document.getElementById("n5"),
+n6= document.getElementById("n6"),
+n7= document.getElementById("n7"),
+n8= document.getElementById("n8"),
+n9= document.getElementById("n9"),
+n0= document.getElementById("n0"),
+dat= document.getElementById("Dat"),
+equ= document.getElementById("Equ"),
+plus= document.getElementById("Plus"),
+minus= document.getElementById("Minus"),
+mult= document.getElementById("Mult"),
+div= document.getElementById("Div"),
+del= document.getElementById("Del"),
+clean= document.getElementById("Clean"),
+win = document.getElementById("window");
+
+n1.onclick = function()
+{
+win.innerHTML += "1";
+}
+
+n2.onclick = function()
+{
+win.innerHTML += "2";
+}
+
+n3.onclick = function ()
+{
+win.innerHTML += "3";
+}
+
+n4.onclick = function ()
+{
+win.innerHTML += "4";
+}
+
+n5.onclick = function()
+{
+win.innerHTML += "5";
+}
+
+n6.onclick = function()
+{
+win.innerHTML += "6";
+}
+
+n7.onclick = function()
+{
+win.innerHTML += "7";
+}
+
+n8.onclick = function ()
+{
+win.innerHTML += "8";
+}
+
+n9.onclick = function()
+{
+win.innerHTML += "9";
+}
+
+n0.onclick = function()
+{
+win.innerHTML += "0";
+}
+
+dat.onclick = function ()
+{
+win.innerHTML += ".";
+}
+
+plus.onclick = function()
+{
+win.innerHTML += "+";
+}
+
+minus.onclick = function()
+{
+win.innerHTML += "-";
+}
+
+mult.onclick = function()
+{
+win.innerHTML += "*";
+}
+
+div.onclick = function()
+{
+win.innerHTML += "/";
+}
+
+del.onclick = function() 
+{ 
+win.innerHTML = win.innerHTML.substr(0,win.innerHTML.length-1); 
+}
+
+clean.onclick = function() 
+{ 
+win.innerHTML = ""; 
+}
+equ.onclick = function()
+{
+	try {
+	win.innerHTML = eval(win.innerHTML);
+	
+	}
+	catch(e) {
+		win.innerHTML = 'Error';
+	}
+	if(win.innerHTML == 'undefined'){
+		win.innerHTML = ""}
+}
+
+}
+</script>
+
+<style type="text/css">
+
+body{
+background: #000;
+color: #fff;
+-webkit-text-stroke: #000 2px;
+font-size: 2em;
+text-align:center;
+
+}
+div {
+height:50px;
+width:50px;
+display:inline-block;
+background:#fff;
+margin:5px;
+-webkit-border-radius: 10px;
+}
+#Clean,#Del{
+height:50px;
+display:inline-block;
+background:#fff;
+margin:5px;
+-webkit-border-radius: 10px;
+}
+#window{
+height:150px;
+width:300px;
+}
+
+
+</style>
+
+<div id="window"></div>
+<br>
+<div id="n1">1</div><div id="n2">2</div><div id="n3">3</div>
+<br>
+<div id="n4">4</div><div id="n5">5</div><div id="n6">6</div> 
+<br>
+<div id="n7">7</div><div id="n8">8</div><div id="n9">9</div> 
+<br>
+<div id="Equ">=</div><div id="n0">0</div><div id="Dat">.</div>
+<br>
+<div id="Plus">+</div><div id="Minus">-</div><div id="Mult">x</div><div id="Div">:</div>
+<br>
+<span id="Clean">Очистить</span><span id="Del">Стереть</span>
+</body>
+</html>
