@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title></title>
+</head>
+<body>
+<div id="map">
+</div>
+<button id="left">←</button>
+<button id="rigth">→</button>
+<style type="text/css">
+body{
+background:#000;
+color:#fff;
+}
+div {
+  white-space: pre;
+  word-spacing: 7px;
+}
+#rigth, #left{
+	width: 50px;
+	height: 50px;
+	background:#000;
+	color:#000;
+	-webkit-text-stroke: #fff 2px;
+	-webkit-box-shadow: 0 0 20px rgba(255,255,255,25);
+	}
+#rigth{
+	position: relative;
+	left:240px;
+	}
+</style>
+</body>
+<script type="text/javascript">
+//создание карты
+var  sizeX = 22, sizeY = 22
+map=[], 
+ContainerMap = document.getElementById('map');
+for(var j=0; j<sizeX; j++)
+	map.push(["#"]);
+
+for(j=0; j<sizeY; j++)
+	map[0].push(["#"]);
+
+for(i=1; i<sizeX-1; i++){
+	for(j=1; j<sizeY; j++)
+		map[i].push([" "]);
+	map[i].push(["#"])
+	}
+map[sizeX-1] = map[0];
+
+//начальное положение головы
+var headX = endX = (sizeX-sizeX%2)/2, headY= endY = (sizeY-sizeY%2)/2,
+resetY = 1, resetX = 0,
+len = [];
+
+function OneStep(){
+	if((map[headY+resetY][headX+resetX] == " ")||(map[headY+resetY][headX+resetX] == "@")){
+	len.push([headY, headX]);
+	if(map[headY+resetY][headX+resetX] == "@"){
+	appleX = random(1, sizeX-2);
+	appleY = random(1, sizeY-2);
+	map[appleY][appleX]="@";
+	}
+	else{
+	endY = len[0][0];
+	endX = len[0][1];
+	len.shift();
+	}
+	map[headY+resetY][headX+resetX] = "$";
+	headY += resetY;
+	headX += resetX;
+	map[endY][endX] = " ";
+	}
+	else{
+		document.write('<h1>Game Over</h1>')
+	}
+}
+
+//сборка карты
+var lines = [];
+setInterval(function(){
+OneStep();
+for(i=0; i<map.length; i++)
+lines.push(map[i].join(''));
+ContainerMap.innerHTML = lines.join("\n");
+lines = [];
+},750)
+//console.log(map[headY][headX]);
+
+//еда
+function random(min, max) { 
+ return Math.floor(Math.random() * (max - min + 1)) + min; 
+}
+
+var appleX = random(1, sizeX-2), 
+appleY = random(1, sizeY-2);
+map[appleY][appleX]="@";
+
+//поворот
+var right = document.getElementById("rigth"),
+left = document.getElementById("left"),
+reset = [-1, 0, 1, 0], indexX = 1, indexY = 2;
+
+right.onclick = function(){
+	if(indexX == 0)
+		indexX = 3;
+	else
+		indexX--;
+	if(indexY == 0)
+	indexY = 3;
+	else
+	indexY--;
+resetX = reset[indexX];
+resetY = reset[indexY];
+}
+left.onclick = function(){
+	if(indexX == 3)
+	indexX = 0;
+	else
+	indexX++;
+	if(indexY == 3)
+	indexY = 0;
+	else
+	indexY++;
+	resetX = reset[indexX];
+	resetY = reset[indexY];
+}
+</script>
+</html>

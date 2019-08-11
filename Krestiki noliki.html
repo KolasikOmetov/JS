@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title></title>
+</head>
+<body>
+<style type="text/css">
+#menu{
+position: absolute;
+z-index:2;
+background:#fff;
+font-size:1.8em;
+}
+#kletka{
+border: 1px solid #0f0; 
+background: #000; 
+height: 70px; 
+width: 70px; 
+position: absolute; 
+color:#fff;
+font-size: 30px;
+text-align:center ;
+}
+
+#ps
+{
+position:absolute;
+top:220px;
+font-size:1.8em;
+}
+
+</style>
+<script type="text/javascript">
+var kletka = [], proba,doIt, was, nowClick,posX=8,posY=-62,
+player = 
+{
+	step: null,
+	figa: null,
+}
+comp = 
+{
+	figa: null,
+};
+
+function getI()
+{
+player.step = true;
+}
+function getCom()
+{
+player.step = false;
+}
+function getX ()
+{
+player.figa = 'x';
+comp.figa = 0;
+}
+function get0 ()
+{
+player.figa = 0;
+comp.figa = 'x';
+}
+window.onload = function () { 
+function proverka()
+{
+if( kletka[0].value != null && kletka[0].value == kletka[1].value && kletka[1].value == kletka[2].value )
+win(kletka[0].value);
+if(kletka[3].value != null && kletka[3].value == kletka[4].value && kletka[4].value== kletka[5].value)
+win(kletka[3].value);
+if(kletka[6].value != null &&  kletka[6].value == kletka[7].value && kletka[7].value== kletka[8].value)
+win(kletka[6].value);
+if(kletka[0].value != null &&  kletka[0].value == kletka[3].value && kletka[3].value== kletka[6].value)
+win(kletka[0].value);
+if(kletka[1].value != null &&  kletka[1].value == kletka[4].value && kletka[4].value== kletka[7].value)
+win(kletka[1].value);
+if(kletka[2].value != null &&  kletka[2].value == kletka[5].value && kletka[5].value== kletka[8].value)
+win(kletka[2].value);
+if(kletka[0].value != null &&  kletka[0].value == kletka[4].value && kletka[4].value== kletka[8].value)
+win(kletka[0].value);
+if(kletka[2].value != null &&  kletka[2].value == kletka[4].value && kletka[4].value== kletka[6].value)
+win(kletka[2].value);
+}
+function win(text){
+was=true;
+setTimeout(function (){if(text == player.figa)
+alert("Победа!");
+else
+alert("Поражение!");
+location=location;
+},500);
+}
+function random(min, max) { 
+ return Math.floor(Math.random() * (max - min + 1)) + min; 
+}
+
+var menu = document.getElementById("menu");
+
+var start = setInterval(function(){
+if ( player.figa!=null && player.step!=null)
+{
+menu.style.display = "none";
+for(var i=0;i<9;i++,posX+=70)
+{
+	if(i%3==0)
+	{
+	posX = 8;
+	posY+=70;
+	}
+	kletka[i] = document.createElement('div');
+	document.body.appendChild(kletka[i]);
+	kletka[i].id = "kletka";
+	kletka[i].style.left = posX+"px";
+	kletka[i].style.top = posY+"px";
+	kletka[i].value = null;
+}
+say();
+clearInterval(start);
+
+var game = setInterval(function(){
+
+if(player.step){
+if(doIt)
+{
+doIt = false;
+player.step = false;
+}
+}
+else
+{
+proba = random(0, 8);
+if(kletka[proba].value == null)
+{
+kletka[proba].value=comp.figa;
+kletka[proba].innerHTML=comp.figa;
+player.step=true;
+}
+}
+proverka();
+if(was)
+clearInterval(game);
+},10)
+
+
+}
+},500)
+//нажатие на клетку
+function say(){
+kletka[1].onclick = function(){
+	if(kletka[1].value == null)
+	{
+	kletka[1].innerHTML = player.figa;
+	kletka[1].value = player.figa;
+	doIt = true;
+	}
+	}
+kletka[0].onclick = function(){
+	if(kletka[0].value == null)
+	{
+	kletka[0].innerHTML = player.figa;
+	kletka[0].value = player.figa;
+	doIt = true;
+	}
+	}
+kletka[2].onclick = function(i){
+	if(kletka[2].value == null)
+	{
+	kletka[2].innerHTML = player.figa;
+	kletka[2].value = player.figa;
+	doIt = true;
+	}
+	}
+kletka[3].onclick = function(i){
+	if(kletka[3].value == null)
+	{
+	kletka[3].innerHTML = player.figa;
+	kletka[3].value = player.figa;
+	doIt = true;
+	}
+	}
+kletka[4].onclick = function(i){
+	if(kletka[4].value == null)
+	{
+	kletka[4].innerHTML = player.figa;
+	kletka[4].value = player.figa;
+	doIt = true;
+	}
+	}
+kletka[5].onclick = function(i){
+	if(kletka[5].value == null)
+	{
+	kletka[5].innerHTML = player.figa;
+	kletka[5].value = player.figa;
+	doIt = true;
+	}
+	}
+kletka[6].onclick = function(i){
+	if(kletka[6].value == null)
+	{
+	kletka[6].innerHTML = player.figa;
+	kletka[6].value = player.figa;
+	doIt = true;
+	}
+	}
+kletka[7].onclick = function(i){
+	if(kletka[7].value == null)
+	{
+	kletka[7].innerHTML = player.figa;
+	kletka[7].value = player.figa;
+	doIt = true;
+	}
+	}
+kletka[8].onclick = function(i){
+	if(kletka[8].value == null)
+	{
+	kletka[8].innerHTML = player.figa;
+	kletka[8].value = player.figa;
+	doIt = true;
+	}
+	}
+//конец
+}
+
+
+}
+function replay(){
+location = location;
+}
+
+</script>
+
+<div id="menu">
+Кто первый ходит?<br>
+<button onclick="getI()" >Я</button>
+<button onclick="getCom()" >Компьютер</button>
+<br>
+Чем будете играть?
+<br>
+<button onclick="getX()" >Крестик</button>
+<button onclick="get0()" >Нолик</button>
+</div>
+<div id="ps">
+<button onclick="replay()">Заново</button>
+<p>N.O.DJ Game!
+</p>
+</div>
+
+</body>
+</html>
