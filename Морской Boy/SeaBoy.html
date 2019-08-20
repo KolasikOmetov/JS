@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Морской Boy!</title>
+</head>
+<body>
+
+<menu>
+<div id='title'>
+<h1>Морской
+	<br>
+	Boy!</h1>
+</div>
+<div id="randomSet">Рандомная расстановка кораблей</div>
+<br>
+<div id="manualSet">Ручная расстановка кораблей</div>
+</menu>
+
+<div id="header">
+	<div id="random">Рандомная расстановка кораблей</div>
+	<div id="manual">Ручная расстановка кораблей</div>
+	<div id='play'>Play</div>
+</div>
+
+<div id="game">
+
+<div id="ContainerUser">
+</div>
+
+<div id="ContainerComp">
+</div>
+
+<div id="ShipPlace">
+		<div id="withField4"></div>
+		<div id="withField3"></div>
+		<div id="withField2"></div>
+		<div id="withField1"></div>
+</div>
+</div>
+
+<audio id="player" src="Sea Wolf.mp3" loop preload autoplay></audio>
+
+<script type="text/javascript">
+
+let header = document.querySelector('#header');
+
+// создание элемента с ID
+function CreatorElementDiv(container, nameID) { 
+	let elem = document.createElement('div');
+	container.appendChild(elem);
+	elem.id = nameID;
+
+	return elem
+}
+
+//конструктор поля
+function Field(cont, field) {
+	this.fieldSide	= 300;
+	this.shipSide	= 30;
+	// количество кораблей в порядке их количества
+	// 4хпалубных - 1, такой же индекс
+	this.shipsData	= [
+		'',
+		[4, 'fourdeck'],
+		[3, 'tripledeck'],
+		[2, 'doubledeck'],
+		[1, 'singledeck']
+	];
+	// объект игрового поля, полученный в качестве аргумента
+	this.field = field;
+	// создаём пустой массив, куда будем заносить данные по каждому созданному кораблю
+	this.squadron	= [];
+	this.fieldX		= field.getBoundingClientRect().top + window.pageYOffset;
+	this.fieldY		= field.getBoundingClientRect().left + window.pageXOffset;
+	this.fieldRight	= this.fieldY + this.fieldSide;
+	this.fieldBtm	= this.fieldX + this.fieldSide;
+	// флаг начала игры, устанавливается после нажатия кнопки 'Play' и запрещает
+	// редактирование положения кораблей
+	this.startGame	= false;
+// отрисовка боковых полей
+	let container = document.getElementById(cont); //доступ к div со всеми полями
+	let lineNums = CreatorElementDiv(container, '#Numbers'),//доступ к div с числами
+		letters = CreatorElementDiv(container, '#Letters'), //доступ к div с буквами
+		masLetters = ['','A', 'B', 'C', 'D', 'F', 'G', 'H', 'I', 'J', 'K']; //все используемые буквы, начиная с индекса 1
+for(let i = 1; i < 11; i++){ //добавляем в поле числа и буквы
+	let num = document.createElement('div');
+	num.className = 'symbol'; //для всех знаков по бокам
+	lineNums.appendChild(num);
+	num.innerHTML = i;
+	num.style.left = ((i-1) % 10 * 30) + 'px';//расположение относительно поля
+	num.style.top = '-30px';
+	let letter = document.createElement('div'); //тоже самое с буквами
+	letter.className = 'symbol';
+	letters.appendChild(letter);
+	letter.style.top = ((i-1) % 10 * 30) + 'px';
+	letter.style.left = '-30px';
+	letter.innerHTML = masLetters[i];
+	} //присваиваем буквы
+// конец отрисовки боковых полей
+
+for(let i = 0; i < 100; i++){ //сборка всех поле
+	let field = СreatorFields(container, 'field');
+	field.style.left = (i % 10 * 30) + 'px';
+	field.style.top = ((i-i % 10)/10 * 30) + 'px';
+}
+};
+
+var userfield = getElement('#ContainerUser'),
+	compfield = getElement('#ContainerComp'),
+
+	user = new Field('ContainerUser', getElement('#ContainerUser'));
+	userfield.startGame = false;
+
+Field.prototype.randomLocationShips = function() {
+	this.matrix = createMatrix();
+	for (var i = 1, length = this.shipsData.length; i < length; i++) {
+		var decks = this.shipsData[i][0];
+		for (var j = 0; j < i; j++) {
+			// получаем координаты первой палубы и направление расположения палуб (корабля)
+			var fc = this.getCoordinatesDecks(decks);
+			// добавим объекту 'fc' два новых свойства
+			//количество палуб
+			fc.decks 	= decks,
+			// и уникальное имя корабля, которое будет использоваться в качестве его 'id'
+			fc.shipname	= this.shipsData[i][1] + String(j + 1);
+			// создаём экземпляр объекта корабля с помощью конструктора 'Ships'
+			var ship = new Ships(this, fc);
+				// генерируем новый корабль и выводим его на экран монитора		
+			ship.createShip();
+		}
+	}
+}
+
+// создание объекта
+Field.prototype.getCoordinatesDecks = function(decks) {
+	// получаем коэффициенты определяющие направление расположения корабля
+	// kx == 0 и ky == 1 — корабль расположен горизонтально,
+	// kx == 1 и ky == 0 - вертикально.
+	let kx = Random(1),
+		ky = (kx == 0) ? 1 : 0, 
+		x, y;
+	// в зависимости от направления расположения, генерируем
+	// начальные координаты
+	if( kx == 0 ){
+		x = Random(9);
+		y = Random(10-decks);
+	}
+	else{
+		y = Random(9);
+		x = Random(10-decks);
+	}
+	// проверяем валидность координат всех палуб корабля:
+	// нет ли в полученных координатах или соседних клетках ранее
+	// созданных кораблей
+	var result = this.checkLocationShip(x, y, kx, ky, decks);
+	// если координаты невалидны, снова запускаем функцию
+	if (!result) return this.getCoordinatesDecks(decks);
+	// создаём объект, свойствами которого будут начальные координаты и
+	// коэффициенты определяющие направления палуб
+	var obj = {
+		x: x,
+		y: y,
+		kx: kx,
+		ky: ky
+	};
+	return obj;
+}
+
+// проверка на валидность
+Field.prototype.checkLocationShip = function(x, y, kx, ky, decks) {
+	let fromX, toX, fromY, toY;
+	// формируем индексы начала и конца цикла для строк
+	// если координата 'x' равна нулю, то это значит, что палуба расположена в самой верхней строке,
+	// т. е. примыкает к верхней границе и началом цикла будет строка с индексом 0
+	// в противном случае, нужно начать проверку со строки с индексом на единицу меньшим, чем у исходной
+	fromX = (x == 0) ? x : x - 1;
+	// если условие истинно - это значит, что корабль расположен вертикально и его последняя палуба примыкает
+	// к нижней границе игрового поля
+	// поэтому координата 'x' последней палубы будет индексом конца цикла
+	if (x + kx * decks == 10 && kx == 1) toX = x + kx * decks;
+	// корабль расположен вертикально и между ним и нижней границей игрового поля есть, как минимум, ещё
+	// одна строка, координата этой строки и будет индексом конца цикла
+	else if (x + kx * decks < 10 && kx == 1) toX = x + kx * decks + 1;
+	// корабль расположен горизонтально вдоль нижней границы игрового поля
+	else if (x == 9 && kx == 0) toX = x + 1;
+	// корабль расположен горизонтально где-то по середине игрового поля
+	else if (x < 9 && kx == 0) toX = x + 2;
+
+	// формируем индексы начала и конца цикла для столбцов
+	// принцип такой же, как и для строк
+	fromY = (y == 0) ? y : y - 1;
+	if (y + ky * decks == 10 && ky == 1) toY = y + ky * decks;
+	else if (y + ky * decks < 10 && ky == 1) toY = y + ky * decks + 1;
+	else if (y == 9 && ky == 0) toY = y + 1;
+	else if (y < 9 && ky == 0) toY = y + 2;
+
+	// запускаем циклы и проверяем выбранный диапазон ячеек
+	// если значение текущей ячейки равно 1 (там есть палуба корабля)
+	// возвращаем false 
+	for (var i = fromX; i < toX; i++) {
+		for (var j = fromY; j < toY; j++) {
+			if (this.matrix[i][j] == 1) return false;
+		}
+	}
+	return true;
+}
+
+// конструктор кораблей
+function Ships(player, fc) {
+	// на каком поле создаётся данный корабль
+	this.player 	= player;
+	// уникальное имя корабля
+	this.shipname 	= fc.shipname;
+	//количество палуб
+	this.decks		= fc.decks;
+	// координата X первой палубы
+	this.x0			= fc.x;
+	 // координата Y первой палубы
+	this.y0			= fc.y;
+	// направлении расположения палуб
+	this.kx			= fc.kx;
+	this.ky 		= fc.ky;
+	// счётчик попаданий
+	this.hits 		= 0;
+	// массив с координатами палуб корабля
+	this.matrix		= [];
+}
+
+// создание корабля и запоминание его координат
+Ships.prototype.createShip = function() {
+	let x		= this.x0,
+		y		= this.y0,
+		kx		= this.kx,
+		ky		= this.ky,
+		decks	= this.decks,
+		player	= this.player
+	
+	// количество циклов равно количеству палуб создаваемого корабля
+		for (let k = 0; k < decks; k++) {
+		// записываем координаты корабля в матрицу игрового поля
+		// если коэффициент равен kx или ky равны 1, то соответствующая координата будет
+		// увеличиваться при каждой итерации
+		// если равен нулю, то координата будет оставаться неизменной
+		// значение 1, записанное в ячейку двумерного массива, говорит о том, что
+		// по данным координатам находится палуба некого корабля
+		player.matrix[x + k * kx][y + k * ky] = 1;
+		// записываем координаты корабля в матрицу экземпляра корабля
+		this.matrix.push([x + k * kx, y + k * ky]);
+		
+		// заносим информацию о созданном корабле в массив эскадры
+		player.squadron.push(this);
+		// если корабль создан для игрока, выводим его на экран
+		if (player == user) this.showShip();
+		// когда количество кораблей в эскадре достигнет 10, т.е. все корабли
+		// сгенерированны, то можно показать кнопку запуска игры
+		if (user.squadron.length == 10) {
+			getElement('#play').style.display = "inline";
+		}
+	}
+}
+
+Ships.prototype.showShip = function() {
+		// создаём новый элемент с указанным тегом
+		// из имени корабля убираем цифры и получаем имя класса
+	var	player		= this.player,
+		decks 		= this.decks,
+		kx			= this.kx,
+		ky			= this.ky;
+	// устанавливаем уникальный идентификатор для корабля
+for (let k = 0; k < decks; k++) {
+	var div	= document.createElement('div');
+	//здесь недоработка
+	div.setAttribute('id', this.shipname);
+	// собираем в одну строку все классы 
+	div.className = 'shipField';
+	// через атрибут 'style' задаём позиционирование кораблю относительно
+	// его родительского элемента
+	// смещение вычисляется путём умножения координаты первой палубы на
+	// размер клетки игрового поля, этот размер совпадает с размером палубы
+		div.style.cssText = 'left:' + (this.y0 * player.shipSide + k * ky * 30 + 4) + 'px; top:' + (this.x0 * player.shipSide + k * kx * 30 + 4) + 'px;';
+	// вставляем созданный элемент корабля в 'document'
+	player.field.appendChild(div);
+	}
+}
+
+Field.prototype.cleanField = function() {
+		// создаём объект игрового поля, на котором должны быть удалены корабли
+	var parent	= this.field,
+		// получаем значение атрибута 'id', которое понадобится для дальнейшей
+		// DOM-навигации
+		id		= parent.getAttribute('id'),
+		// получаем коллекцию все кораблей, которые нужно удалить
+		divs 	= document.querySelectorAll('#' + id + ' > .shipField');
+ 
+	// перебираем в цикле полученную коллекцию и удаляем входящие в неё корабли
+	[].forEach.call(divs, function(el) {
+		parent.removeChild(el);
+	});
+	// очищаем массив объектов кораблей
+	this.squadron.length = 0;
+}
+ 
+
+//конструктор полей
+function СreatorFields(parent, className){ 
+let field = document.createElement('div');
+	field.className = className;
+	parent.appendChild(field);
+	return field;
+}
+
+//создание виртуального поля
+function createMatrix() {
+	var x = 10, y = 10, arr = [10];
+	for (var i = 0; i < x; i++) {
+		arr[i] = [10];
+		for(var j = 0; j < y; j++) {
+			arr[i][j] = 0;
+		}
+	}
+	return arr;
+}
+
+// доступ к элементу по селектору 
+function getElement(attributName) {
+	return document.querySelector(attributName);
+}
+
+function getElements(attributName) {
+	return document.querySelectorAll(attributName);
+}
+
+// рандомайзер в диапозоне от 0 до n
+function Random(n) {
+	// n - диапозон от 0 до n
+	return Math.floor(Math.random() * (n + 1));
+}
+
+// запуск игры
+getElement('#play').onclick = function(){
+	userfield.startGame = true;
+	getElement('#ShipPlace').style.display = 'none';
+	getElement('#ContainerComp').style.display = "block";
+	setPositionShipField('absolute');
+	comp.randomLocationShips();
+	header.innerHTML = "";
+	// устанавливаем флаг начала игры для запрета редактирования положения кораблей
+	userfield.startGame = true;
+	// Запуск инициализации модуля игры
+	Controller.battle.init();
+}
+
+let randomSet = getElement('#randomSet'),//доступ к кнопке старт
+	game = getElement('#game'),//доступ к тегу с самой игрой
+	comp = new Field('ContainerComp', getElement('#ContainerComp'));
+
+randomSet.onclick = function(){ //при нажатии на кнопку с id randomSet
+	game.style.display = "block"; //открываем контейнер с полями
+	header.style.display = "block";
+	getElement('menu').style.display = "none";//убираем весь тег меню
+	user.randomLocationShips();
+}
+
+getElement("#manualSet").onclick = function(){ //при нажатии на кнопку с id randomSet
+	game.style.display = "block";
+	header.style.display = "block"; //открываем контейнер с полями
+	document.querySelector('menu').style.display = "none";//убираем весь тег меню
+	getElement('#ShipPlace').style.display = 'block';
+	setPositionShipField('static');
+	alert('Функция нормально не работает, нажмите рандомную версию');
+}
+
+function setPositionShipField(value){
+	getElements('.shipField').forEach(function(item, i, arr){
+		item.style.position = value;
+	});
+}
+
+getElement('#random').onclick = function(){
+	user.cleanField();
+	getElement('#ShipPlace').style.display = 'none';
+	setPositionShipField('absolute');
+	user.randomLocationShips();
+}
+
+getElement('#manual').onclick = function(){
+	user.cleanField();
+	getElement('#play').style.display = "none";
+	getElement('#ShipPlace').style.display = 'block';
+	setPositionShipField('static');
+	alert('Функция нормально не работает, нажмите рандомную версию');
+}
+
+function creatorFields(parent, className){ //конструктор полей
+let field = document.createElement('div');
+	field.className = className;
+	parent.appendChild(field);
+	return field;
+}
+
+function setFields(k){ //установка корабельных полей
+	let withField = document.querySelector('#withField'+k);
+	withField.className = 'ship';
+	for(let j = 0; j < k; j++){
+	let field = creatorFields(withField, 'shipField');
+	field.style.top = j * 30 + 'px';
+	}
+}
+
+for(let i = 1; i < 5; i++){ //сборка корабельных полей
+	setFields(i);
+	let withField = document.querySelector('#withField'+i);
+	withField.style.left = (i-1)*30+'px';
+}
+</script>
+<script src="DnD.js"></script>
+<script src="Game.js"></script>
+<style type="text/css">
+.field{
+	width: 25px;
+	height: 25px;
+	border: 2px solid #ccc;
+	position: absolute;
+}
+#header{
+	background: url('foot.png') no-repeat;
+	height: 200px;
+	background-size: auto 200px;
+}
+body{
+	font-family: "Gambler";
+	position: relative;
+	background: url('09-04Sea_58.jpg') no-repeat;
+	margin: 0;
+}
+#ContainerUser, #ContainerComp, #ShipPlace{
+	width: 300px;
+	height: 300px;
+	margin: 40px;
+	position: relative;
+}
+#ContainerComp,
+#ShipPlace,
+#header,
+#game,
+#play{
+	display: none;
+}
+#randomSet, #manualSet{
+	background: #00f;
+	text-align: center;
+	font-size: 3em;
+	opacity: 0.5;
+	border-radius: 10px;
+	transition: all 300ms linear 0ms;
+}
+
+#randomSet:hover, 
+#manualSet:hover {
+	opacity: 1;
+	transform: rotate(0deg) scale(1.1,1.1) ;
+	box-shadow: 5px 5px 0px #A5A5A5;
+	z-index: 999;
+	transition: transform 300ms linear 0ms, 
+box-shadow 300ms linear 0ms, z-index 300ms linear 0ms;
+}
+
+.symbol{
+	position: absolute;
+}
+
+.shipField{
+	width: 30px;
+	height: 30px;
+	background: url("5d495e49ed874.png") no-repeat;
+	background-size: auto 25px;
+	display: block;
+	position: absolute;
+}
+
+.ship{
+	position: absolute;
+}
+
+.dot{
+	width: 30px;
+	height: 30px;
+	background: url("miss.png") no-repeat;
+	background-size: 25px;
+	display: block;
+	position: absolute;
+}
+
+.red-cross{
+	width: 30px;
+	height: 30px;
+	background: url("red-cross.png") no-repeat;
+	background-size: 25px;
+	display: block;
+	position: absolute;
+}
+
+.shaded-cell{
+	width: 30px;
+	height: 30px;
+	background: url("shaded-cell.png") no-repeat;
+	background-size: 25px;
+	display: block;
+	position: absolute;
+}
+.shaded-cell{
+	width: 30px;
+	height: 30px;
+	background: url("shaded-cell.png") no-repeat;
+	background-size: 25px;
+	display: block;
+	position: absolute;
+}
+
+#title{
+	text-align: center;
+	background: url("paper.png") no-repeat;
+	background-size: 250px;
+	background-position: center;
+}
+
+@font-face {
+	font-family: "Gambler"; 
+	src: url("17514.otf") format("truetype"); 
+	font-style: normal; 
+	font-weight: normal; 
+}
+#game{
+	position: absolute;
+	top: 100px;
+}
+</style>
+</body>
+</html>
